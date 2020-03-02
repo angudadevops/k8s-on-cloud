@@ -1,17 +1,17 @@
 variable "access_key" {
-  default = "AKIAYXCTGPBA24LFMYUV"
+  default = "xxxxxxxxxxxxxxxxxxx"
 }
 variable "secret_key" {
-  default = "4FYbw9gALrtN3+krDx/tO3fL25sA76f2SZXWaVo/"  
+  default = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  
+}
+variable "key_name" {
+  default = "awstest"
 }
 variable "worker_count" {
   default = 2
 }
 variable "master_count" {
   default = 1
-}
-variable "key_name" {
-  default = "awstest"
 }
 variable "region" {
   default = "us-west-1"
