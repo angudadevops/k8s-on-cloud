@@ -2,7 +2,6 @@
 
 - Prerequisites 
   - SSH trust setup from your local vm to remote hosts or use remote host private_key
-    - 
     ```
       ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
       ssh anguda@$host  | sudo -S mkdir /root/.ssh
