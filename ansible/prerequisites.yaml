@@ -1,0 +1,146 @@
+- name: Define hosts
+  hosts: all
+  become: true
+  tasks:
+   - name: upgrade a server
+     become: true
+     become_user: root
+     apt: update_cache=yes only_upgrade=yes
+     ignore_errors: yes
+
+   - name: Add an Kubernetes apt signing key for Ubuntu
+     when: "ansible_distribution == 'Ubuntu'"
+     apt_key:
+       url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+       state: present
+
+   - name: Adding Kubernetes apt repository for Ubuntu
+     when: "ansible_distribution == 'Ubuntu'"
+     apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+      filename: kubernetes
+
+   - name: install kubernetes components for Ubuntu
+     when: "ansible_distribution == 'Ubuntu'"
+     apt:
+       name: ['apt-transport-https', 'curl', 'ca-certificates', 'gnupg-agent' ,'software-properties-common', 'kubelet=1.15.3-00', 'kubeadm=1.15.3-00', 'kubectl=1.15.3-00']
+       state: present
+
+   - name: Validate whether Kubernetes cluster installed
+     shell: kubectl cluster-info
+     register: k8sup
+     ignore_errors: yes
+
+   - name: Add Docker GPG key for Ubuntu
+     when: "ansible_distribution == 'Ubuntu' and 'running' not in k8sup.stdout"
+     apt_key: url=https://download.docker.com/linux/ubuntu/gpg
+
+   - name: Add Docker APT repository for Ubuntu
+     when: "ansible_distribution == 'Ubuntu' and 'running' not in k8sup.stdout"
+     apt_repository:
+       repo: deb [arch=amd64] https://download.docker.com/linux/{{ansible_distribution|lower}} {{ansible_distribution_release}} stable
+
+   - name: Install Docker-CE Engine on Ubuntu
+     when: " ansible_distribution == 'Ubuntu' and 'running' not in k8sup.stdout"
+     apt:
+       name: [ 'docker-ce=5:19.03.1~3-0~ubuntu-bionic' ]
+       state: present
+       update_cache: yes
+ 
+   - name: Creating a Kubernetes repository file for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS']"
+     file:
+      path: /etc/yum.repos.d/kubernetes.repo
+      state: touch
+
+   - name: Adding repository details in Kubernetes repo file for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS']"
+     blockinfile:
+      path: /etc/yum.repos.d/kubernetes.repo
+      block: |
+       [kubernetes]
+       name=Kubernetes
+       baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+       enabled=1
+       gpgcheck=0
+       repo_gpgcheck=0
+       gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+         https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+   - name: Installing required packages for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS']"
+     yum:
+      name: ['bind-utils', 'yum-utils', 'device-mapper-persistent-data', 'lvm2', 'telnet', 'kubelet-1.15.5', 'kubeadm-1.15.5', 'kubectl-1.15.5', 'firewalld', 'curl']
+      state: present
+
+
+   - name: "Configuring Docker-CE repo for RHEL/CentOS"
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     get_url:
+       url: https://download.docker.com/linux/centos/docker-ce.repo
+       dest: /etc/yum.repos.d/docker-ce.repo
+       mode: 0644
+
+   - name: Install Docker-CE Engine on RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     args:
+       warn: false
+     shell: yum install docker -y
+
+   - name: SetEnforce for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     ignore_errors: yes
+     command: "setenforce 0"
+
+   - name: SELinux for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     args:
+       warn: false
+     command: sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+
+   - name: Enable Firewall Service for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     service:
+       name: firewalld
+       state: started
+       enabled: yes
+     ignore_errors: yes
+
+   - name: Allow Network Ports in Firewalld for RHEL/CentOS
+     when: "ansible_distribution in ['RedHat', 'CentOS'] and 'running' not in k8sup.stdout"
+     firewalld:
+      port: "{{ item }}"
+      state: enabled
+      permanent: yes
+      immediate: yes
+     with_items:
+       - "6443/tcp"
+       - "10250/tcp"
+
+
+   - name: Remove swapfile from /etc/fstab
+     when: "'running' not in k8sup.stdout"
+     mount:
+       name: "{{ item }}"
+       fstype: swap
+       state: absent
+     with_items:
+      - swap
+      - none
+
+   - name: Disable swap
+     when: "'running' not in k8sup.stdout"
+     command: swapoff -a
+
+   - name: Starting and enabling the required services
+     when: "'running' not in k8sup.stdout"
+     service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+     ignore_errors: yes
+     with_items:
+      - docker
+      - kubelet
+

@@ -1,0 +1,116 @@
+- hosts: k8s-masters
+  become: True
+  tasks:
+   
+   - name: Reset Kubernetes component
+     shell: "kubeadm reset --force"
+     register: reset_cluster
+
+   - name: remove etcd directory
+     ignore_errors: yes
+     shell: "{{ item }}" 
+     with_items:
+      - rm -rf /var/lib/etcd
+      - rm -rf $HOME/.kube
+
+   - name: Initialize the Kubernetes cluster using kubeadm
+     command: kubeadm init --pod-network-cidr=10.244.0.0/16 --v 9
+     register: kubeadm
+  
+   - debug: msg={{ kubeadm.stdout_lines }}
+ 
+   - name: Create kube directory
+     file:
+      path: $HOME/.kube
+      state: directory
+
+   - name: Copy kubeconfig to home
+     shell: |
+      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+   - name: Install networking plugin to kubernetes cluster
+     command: "kubectl apply -f {{ item }}" 
+     with_items:
+     - https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml 
+     - https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+     - https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/heapster.yaml
+     - https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/influxdb/influxdb.yaml
+     - https://raw.githubusercontent.com/kubernetes/heapster/master/deploy/kube-config/rbac/heapster-rbac.yaml
+
+   - name: Change permissions of the service account(kubernetes-dashboard) for the dashboard
+     command: kubectl create clusterrolebinding kubernetes-dashboard -n kube-system --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
+
+   - name: Run KubeProxy
+     shell: nohup kubectl proxy --address='0.0.0.0' --accept-hosts='^*$' </dev/null >/dev/null 2>&1 &
+    
+   - name: Generate join token
+     shell: kubeadm token create --print-join-command
+     register: kubeadm_join_cmd
+
+   - set_fact:
+       kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+
+   - debug: var=kubeadm_join
+
+   - name: Store join command
+     action: copy content="{{ kubeadm_join }}" dest="/etc/kubernetes/kubeadm-join.command"
+ 
+   - name: ansible copy file from remote to local.
+     fetch:
+      src: /etc/kubernetes/kubeadm-join.command
+      dest: /tmp/kubeadm-join.command
+      flat: yes
+
+- hosts: k8s-workers
+  become: true
+  vars:
+     kubeadm_join: "{{ lookup('file', '/tmp/kubeadm-join.command') }}"
+  tasks:
+
+   - name: Copy Kubeadm join 
+     copy:
+      src: /tmp/kubeadm-join.command
+      dest: /tmp/kubeadm-join.command
+
+   - name: Reset Kubernetes component
+     shell: "kubeadm reset --force"
+     ignore_errors: yes
+
+   - name: remove kubernetes directory
+     shell: "/bin/rm -rf /etc/kubernetes"
+     ignore_errors: yes 
+
+   - name: Run kubeadm join
+     shell: "{{ kubeadm_join }} --ignore-preflight-errors=swap"
+     
+- hosts: k8s-masters
+  become: true
+  tasks:
+   - name: Get Node name
+     shell: "kubectl get nodes  | grep -v master | awk '{print $1}' | grep -v NAME"
+     register: node_name
+
+   - debug: var=node_name
+
+   - name: Lable the node
+     shell: "kubectl label node {{ item }} node-role.kubernetes.io/node="
+     with_items: "{{ node_name.stdout_lines }}"  
+
+   - name: "Check if Helm is installed"
+     shell: command -v helm >/dev/null 2>&1
+     register: helm_exists
+     ignore_errors: yes
+
+   - name: "Install Helm"
+     command: "{{ item }}"
+     args:
+       warn: false
+     with_items:
+       - curl -O https://get.helm.sh/helm-v3.1.1-linux-amd64.tar.gz
+       - tar -xvzf helm-v3.1.1-linux-amd64.tar.gz
+       - cp linux-amd64/helm /usr/local/bin/
+       - cp linux-amd64/helm /usr/bin/
+       - rm -rf helm-v3.1.1-linux-amd64.tar.gz linux-amd64
+
+     when: helm_exists.rc > 0
