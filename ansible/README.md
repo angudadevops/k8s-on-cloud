@@ -7,7 +7,7 @@
       ssh anguda@$host  | sudo -S mkdir /root/.ssh
       ssh anguda@$host | sudo -S touch /root/.ssh/authorized_keys
       ssh anguda@$host | sudo -S apt install git ansible vim sshpass openssh-server -y
-      cat /root/.ssh/id_rsa.pub | sshpass -p k8s123 ssh root@$host "cat >> /root/.ssh/authorized_keys"
+      cat /root/.ssh/id_rsa.pub | ssh root@$host "cat >> /root/.ssh/authorized_keys"
     ```
 
 
