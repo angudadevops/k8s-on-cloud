@@ -1,0 +1,23 @@
+- hosts: k8s-masters
+  become: True
+  tasks:
+
+   - name: Deploy logging on Kubernetes Cluster
+     shell: "{{ item }}"
+     with_items:
+      - git clone https://github.com/angudadevops/kubernetes_ubuntu.git
+      - cd kubernetes_ubuntu/logging && bash logging.sh create
+      - rm -rf kubernetes_ubuntu
+     register: logging
+
+   - debug: var=logging
+
+   - name: Deploy monitoring on Kubernetes Cluster
+     shell: "{{ item }}"
+     with_items:
+      - git clone https://github.com/angudadevops/kubernetes_ubuntu.git
+      - cd kubernetes_ubuntu/monitoring && bash monitoring.sh
+      - rm -rf kubernetes_ubuntu
+     register: mon
+
+   - debug: var=mon
