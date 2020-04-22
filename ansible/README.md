@@ -23,6 +23,9 @@ This directory helps you to install kubernetes cluster with ansible playbooks. P
 52.52.238.67 ansible_ssh_host=52.52.238.67 ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
 52.8.50.178 ansible_ssh_host=52.8.50.178 ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
 ``` 
+## Note
+
+If you're using Terraform with Ansible for kubernetes cluster on AWS, you can ignore above steps as my scripts help you to generate ansible inventory. Above steps are for complete on bare metal
 
 ### Usage
 
@@ -37,4 +40,4 @@ Then run k8s.yaml to install kubernetes cluster with kubeadm
 ```
 ansible-playbook k8s.yaml -i inventory
 ```
-
+ 
