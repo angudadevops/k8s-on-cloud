@@ -6,6 +6,7 @@ This repository helps to spin up AWS environment and create kubernetes cluster o
   - AWS account details
   - Ansible on your local machine
   - Terraform on your local machine 
+  - EC2 instance Key Pair
 
 ### Usage
 
