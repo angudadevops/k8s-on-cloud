@@ -5,7 +5,7 @@
    - name: Deploy logging on Kubernetes Cluster
      shell: "{{ item }}"
      with_items:
-      - git clone https://github.com/angudadevops/kubernetes_ubuntu.git
+      - git clone https://github.com/angudadevops/kubernetes_baremetal.git
       - cd kubernetes_ubuntu/logging && bash logging.sh create
       - rm -rf kubernetes_ubuntu
      register: logging
@@ -15,7 +15,7 @@
    - name: Deploy monitoring on Kubernetes Cluster
      shell: "{{ item }}"
      with_items:
-      - git clone https://github.com/angudadevops/kubernetes_ubuntu.git
+      - git clone https://github.com/angudadevops/kubernetes_baremetal.git
       - cd kubernetes_ubuntu/monitoring && bash monitoring.sh
       - rm -rf kubernetes_ubuntu
      register: mon
