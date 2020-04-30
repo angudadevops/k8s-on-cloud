@@ -23,3 +23,14 @@ cd terrform
 terraform destroy -auto-approve 
 ```
 
+### Troubleshooting
+
+If you see any error with terraform apply, it could be issue with values from varaiables.tf like ami id. Please update and try to re run. To enable Terraform trace logs, please run below command before running k8scluster.sh
+```
+export TF_LOG=TRACE
+```
+
+To disable logs, run below command
+```
+export TF_LOG=
+```
