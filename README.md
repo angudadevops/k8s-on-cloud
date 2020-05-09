@@ -1,4 +1,4 @@
-<h1> Kubernetes on AWS with Terraform </h1> [![HitCount](http://hits.dwyl.com/agudadevops/k8s_aws.svg)](http://hits.dwyl.com/agudadevops/k8s_aws)
+<h1> Kubernetes on AWS with Terraform </h1> [![HitCount](http://hits.dwyl.com/angudadevops/k8s_aws.svg)](http://hits.dwyl.com/angudadevops/k8s_aws)
 
 
 This repository helps to spin up AWS environment and create kubernetes cluster on top of that. 
