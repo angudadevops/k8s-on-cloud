@@ -1,15 +1,13 @@
-<h1> Terraform on AWS </h1>
+<h1> Terraform on Azure </h1>
 
-For kubernetes multi node cluster we need to bring up multi nodes with help of terraform 
+For kubernetes with kubeadm multi node cluster we need to bring up multi nodes with help of terraform 
 
 - Prerequisites
-  - aws_access_key
-  - aws_secret_key
-  - aws_keypair_name
+  - azure account
 
-Make sure to update these values on varaiable.tf to access your aws account 
+Make sure you have an access to your azure account 
 
-If you want to modify any details like use another aws AMI, use variable.tf file to refer that
+If you want to modify any details like number of worker node, use variable.tf file to refer that
 
 ### Usage
 
@@ -35,5 +33,6 @@ To create a ansible inventory, run the below command . if you want to change the
 
 ```
 terraform output inventory > ../ansible/inventory
+terraform output tls_private_key > azure.pem
 ```
 

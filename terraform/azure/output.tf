@@ -3,15 +3,15 @@ output "tls_private_key" {
 }
 
 data "template_file" "masters_ansible" {
-  template = "$${host} ansible_ssh_host=$${host} ansible_ssh_port=22 ansible_ssh_user=azureuser ansible_ssh_private_key_file=/Users/aguda/Downloads/azure/azure.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
-  count = var.master_count
+  template = "$${host} ansible_ssh_host=$${host} ansible_ssh_port=22 ansible_ssh_user=azureuser ansible_ssh_private_key_file=../terraform/azure/azure.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
+  count = var.master_count  
   vars = {
     host = "${azurerm_linux_virtual_machine.master[count.index].public_ip_address}"
   }
 }
 
 data "template_file" "workers_ansible" {
-  template = "$${host} ansible_ssh_host=$${host} ansible_ssh_port=22 ansible_ssh_user=azureuser ansible_ssh_private_key_file=/Users/aguda/Downloads/azure/azure.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
+  template = "$${host} ansible_ssh_host=$${host} ansible_ssh_port=22 ansible_ssh_user=azureuser ansible_ssh_private_key_file=../terraform/azure/azure.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
   count = var.worker_count
   vars = {
     host = "${azurerm_linux_virtual_machine.worker[count.index].public_ip_address}"

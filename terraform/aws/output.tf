@@ -1,5 +1,5 @@
 data "template_file" "masters_ansible" {
-  template = "$${host} ansible_ssh_host=$${ip} ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=/Users/aguda/Downloads/AWS/awstest.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
+  template = "$${host} ansible_ssh_host=$${ip} ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=../terraform/aws/awstest.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
   count = var.master_count
   vars = {
     host = "${aws_eip.eip-master.*.public_dns[count.index]}"
@@ -8,7 +8,7 @@ data "template_file" "masters_ansible" {
 }
 
 data "template_file" "workers_ansible" {
-  template = "$${host} ansible_ssh_host=$${ip} ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=/Users/aguda/Downloads/AWS/awstest.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
+  template = "$${host} ansible_ssh_host=$${ip} ansible_ssh_port=22 ansible_ssh_user=ubuntu ansible_ssh_private_key_file=../terraform/aws/awstest.pem ansible_ssh_extra_args='-o StrictHostKeyChecking=no'"
   count = var.worker_count
   vars = {
     host = "${aws_eip.eip-worker.*.public_dns[count.index]}"
