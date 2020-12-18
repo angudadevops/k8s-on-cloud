@@ -51,7 +51,7 @@ bash k8scluster.sh google
 To clean up the AWS environment with kubernetes, run the below command
 
 ```
-cd terrform/google
+cd terrform/gcp
 terraform destroy -auto-approve
 ```                         
 
