@@ -43,7 +43,7 @@ Make sure you have Google cloud account setup, as below command will open to log
 `NOTE:` Google authentication happened in your default web browser and when script is running, it will ask some google cloud recommended settings, please provide as default. 
 
 ```
-bash k8scluster.sh google
+bash k8scluster.sh gcp
 ```
 
 To clean up the AWS environment with kubernetes, run the below command
