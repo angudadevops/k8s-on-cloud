@@ -1,4 +1,3 @@
-
 azurecli() {
 systype=$(uname -s)
 
@@ -7,10 +6,31 @@ if [[ $systype == "Linux" ]]; then
 	curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 elif [[ $systype == "Darwin" ]]; then
 	echo "Installing Azure CLI for Azure Authentication"
+        brew uninstall azure-cli --force
 	brew update && brew install azure-cli
 else
 	echo "System should be either Mac or Linux"
 	exit 0
+fi
+}
+
+googlecloudsdk() {
+systype=$(uname -s)
+if [[ $systype == "Linux" ]]; then
+        echo "Installing Google Cloud SDK for Google Cloud Authentication"
+        curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-321.0.0-linux-x86.tar.gz
+        tar -xzf google-cloud-sdk-321.0.0-linux-x86.tar.gz
+	#./google-cloud-sdk/install.sh
+	#rm -rf google-cloud-sdk-321.0.0-linux-x86.tar.gz google-cloud-sdk
+elif [[ $systype == "Darwin" ]]; then
+        echo "Installing Google cloud SDK for Google Cloud Authentication"
+        curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-321.0.0-darwin-x86_64.tar.gz
+	tar -xzf google-cloud-sdk-321.0.0-darwin-x86_64.tar.gz 
+	#./google-cloud-sdk/install.sh
+#	rm -rf google-cloud-sdk-321.0.0-darwin-x86_64.tar.gz google-cloud-sdk
+else
+        echo "System should be either Mac or Linux"
+        exit 0
 fi
 }
 
@@ -106,6 +126,31 @@ elif [[ $1 == "aws" ]]; then
 	ansible -m ping -i inventory all
 	ansible-playbook -i inventory prerequisites.yaml
 	ansible-playbook -i inventory k8s.yaml
+elif [[ $1 == "gcp" ]]; then
+        installansible
+	googlecloudsdk       
+	rm -rf ~/.config/gcloud  ~/.ssh/google*
+        echo "Login to Google cloud Account using your browser"
+       # gcloud auth login 
+        ./google-cloud-sdk/bin/gcloud init
+        echo "Login Successfull"
+        ./google-cloud-sdk/bin/gcloud beta compute config-ssh
+ 	./google-cloud-sdk/bin/gcloud auth application-default login
+        terraforminstall
+        cd terraform/gcp
+        terraform init
+        terraform plan
+        terraform apply -auto-approve
+        terraform output inventory > ../../ansible/inventory
+	echo "Please wait for a while to bring GCP vm's are up"
+
+        sleep 30
+        cd ../../ansible
+        ansible -m ping -i inventory all
+        ansible-playbook -i inventory prerequisites.yaml
+        ansible-playbook -i inventory k8s.yaml
+        cd ../
+	rm -rf google-cloud-sdk*
 else
-	echo -e "Usage\n\nAvailable Options:\n\n   aws:	To Provision Kubernetes Cluster on AWS\n   azure:	To Provision Kubernetes Cluster on Azure\n"
+	echo -e "Usage\n\nAvailable Options:\n\n   aws:	To Provision Kubernetes Cluster on AWS\n   azure:	To Provision Kubernetes Cluster on Azure\n   google:       To Provision Kubernetes Cluster on Google Cloud\n"
 fi

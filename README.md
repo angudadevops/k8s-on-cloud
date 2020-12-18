@@ -6,6 +6,7 @@ This repository helps to spin up cloud environment and create kubernetes cluster
 
 - Prerequisites
   - Linux machine or Mac Os Machine
+  - AWS/Azure/GCP Account
 
 ### Usage
 
@@ -26,6 +27,7 @@ terraform destroy -auto-approve
 #### Azure
 Make sure you have azure account setup, as below command will open to login to your azure account. Once succesful login it will provision k8s cluster on Azure Virtual Machines
 
+`NOTE:` Azure  authentication happened in your default web browser. So this will work only Desktop versions
 ```
 bash k8scluster.sh azure
 ```
@@ -36,6 +38,22 @@ To clean up the AWS environment with kubernetes, run the below command
 cd terrform/azure
 terraform destroy -auto-approve 
 ```
+
+#### Google Cloud
+Make sure you have Google cloud account setup, as below command will open to login to your Google account. Once succesful login it will provision k8s cluster on Google Compute Engines
+
+`NOTE:` Google authentication happened in your default web browser and when script is running, it will ask some google cloud recommended settings, please provide as default. 
+
+```
+bash k8scluster.sh google
+```
+
+To clean up the AWS environment with kubernetes, run the below command
+
+```
+cd terrform/google
+terraform destroy -auto-approve
+```                         
 
 ### Troubleshooting
 

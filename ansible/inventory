@@ -1,0 +1,7 @@
+
+[k8s-masters]
+35.227.138.136 ansible_ssh_host=35.227.138.136 ansible_ssh_port=22 ansible_ssh_user=aguda ansible_ssh_private_key_file=~/.ssh/google_compute_engine ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+
+[k8s-workers]
+35.230.96.102 ansible_ssh_host=35.230.96.102 ansible_ssh_port=22 ansible_ssh_user=aguda ansible_ssh_private_key_file=~/.ssh/google_compute_engine ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+34.83.136.81 ansible_ssh_host=34.83.136.81 ansible_ssh_port=22 ansible_ssh_user=aguda ansible_ssh_private_key_file=~/.ssh/google_compute_engine ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
